@@ -1,0 +1,33 @@
+def simulate_hull_white_all(df, theta, a, sigma, dt=1/252):
+  
+    num_steps = len(df)
+    rates = np.zeros(num_steps)
+    time_points = np.linspace(0, num_steps * dt, num_steps)
+    rates[0] = df.iloc[0]  # Use the initial rate from the DataFrame
+    
+    for t in range(1, num_steps):
+        dr = a * (theta - rates[t-1]) * dt + sigma * np.sqrt(dt) * np.random.normal()
+        rates[t] = rates[t-1] + dr
+
+    # Return the simulated rates as a pandas Series with the same index as the input DataFrame
+    simulated_rates = pd.Series(rates, index=df.index)
+    return simulated_rates
+
+theta = int_rate['interest_rate'].mean() #mean reversion rate
+delta_rates = int_rate['interest_rate'].diff()
+lagged_rates = int_rate['interest_rate'].shift(1).fillna(0)
+
+# Computing the a_estimated
+X = lagged_rates.values.reshape(-1, 1)
+y = delta_rates.fillna(0)
+
+# Linear regression
+from sklearn.linear_model import LinearRegression
+regression = LinearRegression().fit(X, y)
+a_estimated = -regression.coef_[0]
+
+residuals = y - regression.predict(X)
+sigma_estimated = np.std(residuals)
+
+# Simulate interest rate using pure hull white method
+simulated_rates_hw = simulate_hull_white_all(int_rate['interest_rate'], theta, a_estimated, sigma_estimated)
