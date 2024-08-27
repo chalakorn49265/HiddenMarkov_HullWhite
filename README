@@ -1,0 +1,36 @@
+Short-Term Interest Rate Modeling with HMM and Hull-White Model
+
+Overview
+
+This repository contains a comprehensive study on modeling short-term interest rates by integrating the Hidden Markov Model (HMM) with the Hull-White (HW) one-factor model. The objective is to improve the accuracy of interest rate predictions by leveraging the regime-switching capabilities of HMM alongside the mean-reverting properties of the HW model.
+
+Models Used
+
+1. Hull-White (HW) Model
+
+The Hull-White model is a widely-used framework in financial mathematics for modeling interest rates. It assumes that interest rates follow a mean-reverting stochastic process, making it suitable for capturing the dynamics of short-term rates. The model is defined by:
+
+ dr(t) = a(\theta(t) - r(t))dt + \sigma dW(t) 
+
+Where:
+
+	•	 r(t)  is the interest rate at time  t .
+	•	 \theta(t)  is the mean-reversion level.
+	•	 a  is the mean-reversion speed.
+	•	 \sigma  is the volatility.
+	•	 W(t)  is a Wiener process (Brownian motion).
+
+2. Hidden Markov Model (HMM)
+
+The Hidden Markov Model is a statistical model that assumes the system being modeled is a Markov process with hidden states. In this study, HMM is used to detect different regimes in the interest rate data, such as periods of high volatility or stability. The detected regimes are then incorporated into the Hull-White model to enhance its predictive power.
+
+Methodology
+
+	1.	Data Collection: Historical short-term interest rate data (e.g., 1-Year Treasury Constant Maturity Rate) is sourced from reliable financial databases like the Federal Reserve Economic Data (FRED).
+	2.	Model Calibration:
+	•	Hull-White Model: Parameters such as the mean-reversion level ( \theta ), speed ( a ), and volatility ( \sigma ) are estimated using historical data.
+	•	Hidden Markov Model: The HMM identifies different regimes in the data, which are then used to modify the parameters of the Hull-White model dynamically.
+	3.	Simulation:
+	•	The Hull-White model simulates interest rates across the entire dataset.
+	•	The HMM-HW model uses the identified regimes to adjust the simulation dynamically, resulting in a more nuanced and accurate prediction of interest rates.
+	4.	Error Analysis: The models’ performance is evaluated using Absolute Percentage Error (APE) metric
