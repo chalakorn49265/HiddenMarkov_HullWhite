@@ -1,0 +1,73 @@
+# Defining Hidden Markov Model(Gaussian) 
+hmm_gaus = hmm.GaussianHMM(n_components=2, covariance_type='diag', n_iter=1000)
+hmm_gaus.fit(int_rate)
+
+regimes = hmm_gaus.predict(int_rate)
+int_rate['Regime'] = regimes
+int_rate
+
+# Plotting the visualization for 'Regime'
+plt.figure(figsize=(12,6))
+plt.scatter(int_rate.index, int_rate['interest_rate'], c=int_rate['Regime'], cmap='viridis')
+plt.xlabel('Date')
+plt.ylabel('Interest Rate')
+plt.title('Interest Rate Regimes')
+plt.show()
+
+# Regime: Purple might indicate 'Bull' market, whereas Yellow might signify 'Bear' market
+
+# Computing Forward Rate Function
+# Convert the datetime index to the number of days since the start date
+numeric_index = (int_rate.index - int_rate.index[0]).days
+
+# Define Forward rate funciton
+X = np.column_stack([numeric_index, numeric_index**2, numeric_index**3])
+X = np.hstack([regimes.reshape(-1, 1), X])
+
+y = int_rate['interest_rate'].values
+
+reg = LinearRegression()
+reg.fit(X, y)
+
+# Retrieving the interpolation coefficients 
+c, b1, b2, b3 = reg.coef_
+b0 = reg.intercept_
+
+# Defining Minimizer Function(HW model)
+def simulate_hw_model(r0, a, sigma, f_t, delta_t, T):
+    rates = [r0]
+    for t in range(1, T):
+        theta_t = (np.diff(f_t, n=1) / delta_t)[t-1] + a * f_t[t-1]
+        dr = theta_t * delta_t + (1 - a * delta_t) * rates[-1] + sigma * np.sqrt(delta_t) * np.random.normal()
+        rates.append(dr)
+    return np.array(rates)
+
+r0 = int_rate['interest_rate'].iloc[0]
+delta_t = 1 / 252  # Daily step
+f_t = reg.predict(X)  # Estimated forward rate function
+
+a = 27.5136  # Calibrated value
+sigma = 1.4797  # Calibrated value
+
+simulated_rates = simulate_hw_model(r0, a, sigma, f_t, delta_t, len(int_rate))
+
+# Parameter calibration for sigma and a
+def objective(params):
+    a, sigma = params
+    simulated_rates = simulate_hw_model(r0, a, sigma, f_t, delta_t, len(int_rate))
+    return np.sum((simulated_rates - int_rate['interest_rate'].values)**2)
+
+res = minimize(objective, x0=[a, sigma], bounds=((0, None), (0, None)))
+a_calibrated, sigma_calibrated = res.x
+# Print the calibrated parameters with labels
+print(f"a (calibrated mean-reversion rate): {a_calibrated}")
+print(f"sigma (calibrated volatility): {sigma_calibrated}")
+
+simulated_rates_hwhmm = simulate_hw_model(r0, a_calibrated, sigma_calibrated, f_t, delta_t, len(int_rate))
+
+# Plot the results
+plt.figure(figsize=(10,6))
+plt.plot(int_rate.index, int_rate['interest_rate'], label='Actual')
+plt.plot(int_rate.index, simulated_rates_hwhmm, label='Simulated')
+plt.legend()
+plt.show()
