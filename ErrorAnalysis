@@ -1,0 +1,31 @@
+actual_rates = int_rate['interest_rate']
+error_hw = actual_rates - simulated_rates_hw
+error_hwhmm = actual_rates - simulated_rates_hwhmm
+
+# Calculate the percentage errors for both models
+percentage_error_hw = np.abs((actual_rates - simulated_rates_hw) / actual_rates) * 100
+percentage_error_hwhmm = np.abs((actual_rates - simulated_rates_hwhmm) / actual_rates) * 100
+
+# Plotting
+plt.figure(figsize=(12, 6))  # Set the figure size
+
+# Plot the HW model errors
+sns.histplot(percentage_error_hw, bins=30, color='blue', label='HW Model', kde=False)
+
+# Plot the HMM-HW model errors
+sns.histplot(percentage_error_hwhmm, bins=30, color='red', label='HMM-HW Model', kde=False)
+
+# Adding titles and labels
+plt.title('Distribution of Errors for Hull-White Model (Blue) vs HMM-HW Model (Red)')
+plt.xlabel('Percentage Error')
+plt.ylabel('Frequency')
+
+# Limiting the x-axis to 500
+plt.xlim(0, 500)
+
+# Adding a legend to differentiate the models
+plt.legend()
+
+# Show the plot
+plt.tight_layout()
+plt.show()
