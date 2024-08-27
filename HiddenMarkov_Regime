@@ -1,0 +1,17 @@
+# Defining Hidden Markov Model(Gaussian) 
+hmm_gaus = hmm.GaussianHMM(n_components=2, covariance_type='diag', n_iter=1000)
+hmm_gaus.fit(int_rate)
+
+regimes = hmm_gaus.predict(int_rate)
+int_rate['Regime'] = regimes
+int_rate
+
+# Plotting the visualization for 'Regime'
+plt.figure(figsize=(12,6))
+plt.scatter(int_rate.index, int_rate['interest_rate'], c=int_rate['Regime'], cmap='viridis')
+plt.xlabel('Date')
+plt.ylabel('Interest Rate')
+plt.title('Interest Rate Regimes')
+plt.show()
+
+# Regime: Purple might indicate 'Bull' market, whereas Yellow might signify 'Bear' market
